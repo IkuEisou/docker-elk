@@ -22,7 +22,8 @@ services:
       ELASTIC_PASSWORD: changeme
     networks:
       - elk
-
+    restart: unless-stopped
+    
   logstash:
     build:
       context: logstash/
@@ -36,7 +37,7 @@ services:
       - type: bind
         source: ./logstash/pipeline
         target: /usr/share/logstash/pipeline
-        read_only: true
+        read_only: false
     ports:
       - "5000:5000"
       - "9600:9600"
@@ -46,6 +47,7 @@ services:
       - elk
     depends_on:
       - elasticsearch
+    restart: unless-stopped
 
   kibana:
     build:
@@ -63,6 +65,24 @@ services:
       - elk
     depends_on:
       - elasticsearch
+    restart: unless-stopped
+
+  filebeat:
+    build:
+      context: filebeat/
+      args: 
+        ELK_VERSION: $ELK_VERSION
+    volumes:
+      - type: bind
+        source: ./filebeat/config/filebeat.yml
+        target: /usr/share/filebeat/config/filebeat.yml
+        read_only: true
+      - ./logs:/logs
+    networks:
+      - elk
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
 
 networks:
   elk:

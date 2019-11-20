@@ -1,1 +1,2 @@
-docker exec -it ${1} /bin/bash
+DID=`docker ps -aqf name="docker-elk_logstash_1"`
+docker exec -it ${DID} /bin/bash

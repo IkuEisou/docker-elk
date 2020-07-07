@@ -58,10 +58,10 @@ if [ "$#" -ge 1 ]; then
 fi
 
 log 'Waiting for Elasticsearch readiness'
-poll_ready elasticsearch 'http://localhost:9200/' 'elastic:changeme'
+poll_ready elasticsearch 'http://localhost:9200/' 'elastic:p6zmi254'
 
 log 'Waiting for Kibana readiness'
-poll_ready kibana 'http://localhost:5601/api/status' 'kibana:changeme'
+poll_ready kibana 'http://localhost:5601/api/status' 'kibana:p6zmi254'
 
 log 'Waiting for Logstash readiness'
 poll_ready logstash 'http://localhost:9600/_node/pipelines/main?pretty'
@@ -72,11 +72,11 @@ curl -X POST -D- 'http://localhost:5601/api/saved_objects/index-pattern' \
 	-s -w '\n' \
 	-H 'Content-Type: application/json' \
 	-H "kbn-version: ${ELK_VERSION}" \
-	-u elastic:changeme \
+	-u elastic:p6zmi254 \
 	-d '{"attributes":{"title":"logstash-*","timeFieldName":"@timestamp"}}'
 
 log 'Searching index pattern via Kibana API'
-response="$(curl 'http://localhost:5601/api/saved_objects/_find?type=index-pattern' -u elastic:changeme)"
+response="$(curl 'http://localhost:5601/api/saved_objects/_find?type=index-pattern' -u elastic:p6zmi254)"
 echo "$response"
 count="$(jq -rn --argjson data "${response}" '$data.total')"
 if [[ $count -ne 1 ]]; then
@@ -88,11 +88,11 @@ log 'Sending message to Logstash TCP input'
 echo 'dockerelk' | nc localhost 5000
 
 sleep 1
-curl -X POST 'http://localhost:9200/_refresh' -u elastic:changeme \
+curl -X POST 'http://localhost:9200/_refresh' -u elastic:p6zmi254 \
 	-s -w '\n'
 
 log 'Searching message in Elasticsearch'
-response="$(curl 'http://localhost:9200/_count?q=message:dockerelk&pretty' -u elastic:changeme)"
+response="$(curl 'http://localhost:9200/_count?q=message:dockerelk&pretty' -u elastic:p6zmi254)"
 echo "$response"
 count="$(jq -rn --argjson data "${response}" '$data.count')"
 if [[ $count -ne 1 ]]; then
